@@ -4,12 +4,19 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-type Input uint
+type Inputs struct {
+	direction Direction
+	pressed   bool
+}
+
+type Direction uint
 
 const (
-	UNKNOWNINPUT Input = iota
+	UNKNOWNDIRECTION Direction = iota
+	NONE
 	LEFT
 	RIGHT
 	DOWN
@@ -19,9 +26,10 @@ const (
 	LeftString  = "left"
 	RightString = "right"
 	DownString  = "down"
+	NoneString  = "none"
 )
 
-func (i Input) String() string {
+func (i Direction) String() string {
 	switch i {
 	case LEFT:
 		return LeftString
@@ -29,34 +37,51 @@ func (i Input) String() string {
 		return RightString
 	case DOWN:
 		return DownString
+	case NONE:
+		return NoneString
 	default:
 		panic("unhandled default case")
 	}
 }
 
-func ParseInput(input string) (Input, error) {
-	switch input {
+func ParseDirection(direction string) (Direction, error) {
+	switch direction {
 	case LeftString:
 		return LEFT, nil
 	case RightString:
 		return RIGHT, nil
 	case DownString:
 		return DOWN, nil
+	case NoneString:
+		return NONE, nil
 	default:
-		return UNKNOWNINPUT, fmt.Errorf("unknown input: %s", input)
+		return UNKNOWNDIRECTION, fmt.Errorf("unknown direction: %s", direction)
 	}
 }
 
-func HandleInput() Input {
-	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+func NewInput() *Inputs {
+	return &Inputs{
+		direction: NONE,
+		pressed:   false,
+	}
+}
+
+func (i *Inputs) HandleInput() Direction {
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) && !i.pressed {
+		i.pressed = true
 		return LEFT
 	}
 
-	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) && !i.pressed {
+		i.pressed = true
 		return RIGHT
 	}
-	if ebiten.IsKeyPressed(ebiten.KeySpace) {
+
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) && !i.pressed {
+		i.pressed = true
 		return DOWN
 	}
-	return UNKNOWNINPUT
+
+	i.pressed = false
+	return NONE
 }

@@ -2,31 +2,36 @@ package game
 
 import (
 	"image/color"
-	"log/slog"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
-	widthBoard, heightBoard = 7, 6
+	sizeElement = 60
+	padding     = 2
 )
 
-// Game implements ebiten.Game interface.
+var (
+	colorBoard = color.RGBA{R: 0, G: 128, B: 255, A: 255}
+)
+
 type Game struct {
 	width, height int
 	title         string
 	inited        bool
 	board         *Board
+	inputs        *Inputs
+	gameOver      bool
 }
 
 func NewGame(width int, height int, title string) *Game {
 	return &Game{
-		width:  width,
-		height: height,
-		title:  title,
-		inited: false,
+		width:    width,
+		height:   height,
+		title:    title,
+		inited:   false,
+		gameOver: false,
 	}
 }
 
@@ -35,24 +40,38 @@ func (g *Game) Update() error {
 		g.init()
 	}
 
-	input := HandleInput()
-	switch input {
-	case LEFT:
-		slog.Info("left")
-	case RIGHT:
-		slog.Info("right")
-	case DOWN:
-		slog.Info("down")
+	input := g.inputs.HandleInput()
+
+	if !g.gameOver {
+		switch input {
+		case LEFT:
+			g.board.MoveLeft()
+		case RIGHT:
+			g.board.MoveRight()
+		case DOWN:
+			g.board.DropPiece()
+			g.searchGameOver()
+			if !g.gameOver {
+				g.board.ChangePlayer()
+			}
+		}
+	} else {
+		switch input {
+		case DOWN:
+			g.Reset()
+		}
 	}
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	ebitenutil.DebugPrint(screen, "Hello, World!")
-	g.board.Print()
-
-	vector.DrawFilledRect(screen, 10.0, 10.0, 50, 50, color.White, true)
-	vector.DrawFilledCircle(screen, 35, 35, 20, color.Black, true)
+	if g.gameOver {
+		ebitenutil.DebugPrint(screen, "Game ended!")
+		return
+	}
+	wBoard, hBoard := g.board.Size()
+	g.board.Draw(screen, (float32(g.width)-wBoard)/2, (float32(g.height)-hBoard)/2)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -68,11 +87,23 @@ func (g *Game) init() {
 	ebiten.SetWindowTitle(g.title)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
-	g.board = NewBoard(widthBoard, heightBoard)
+	g.board = NewBoard(colorBoard, sizeElement, padding)
+	g.inputs = NewInput()
 }
 
 func (g *Game) Start() {
 	if err := ebiten.RunGame(g); err != nil {
 		panic(err)
 	}
+}
+
+func (g *Game) searchGameOver() {
+	if g.board.IsFinished() {
+		g.gameOver = true
+	}
+}
+
+func (g *Game) Reset() {
+	g.board.Reset()
+	g.gameOver = false
 }
