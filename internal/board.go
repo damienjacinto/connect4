@@ -173,3 +173,14 @@ func (b *Board) Reset() {
 	b.header.Reset()
 	b.currentPlayer = 1
 }
+
+func (b *Board) IsFull() bool {
+	for i := range b.height {
+		for j := range b.width {
+			if b.board[i][j] == 0 {
+				return false
+			}
+		}
+	}
+	return true
+}

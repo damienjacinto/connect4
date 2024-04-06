@@ -29,8 +29,8 @@ const (
 	NoneString  = "none"
 )
 
-func (i Direction) String() string {
-	switch i {
+func (d Direction) String() string {
+	switch d {
 	case LEFT:
 		return LeftString
 	case RIGHT:

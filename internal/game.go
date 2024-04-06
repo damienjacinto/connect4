@@ -4,7 +4,6 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 const (
@@ -22,16 +21,16 @@ type Game struct {
 	inited        bool
 	board         *Board
 	inputs        *Inputs
-	gameOver      bool
+	result        Result
 }
 
 func NewGame(width int, height int, title string) *Game {
 	return &Game{
-		width:    width,
-		height:   height,
-		title:    title,
-		inited:   false,
-		gameOver: false,
+		width:  width,
+		height: height,
+		title:  title,
+		inited: false,
+		result: UNKNOWNRESULT,
 	}
 }
 
@@ -42,7 +41,7 @@ func (g *Game) Update() error {
 
 	input := g.inputs.HandleInput()
 
-	if !g.gameOver {
+	if g.result == UNKNOWNRESULT {
 		switch input {
 		case LEFT:
 			g.board.MoveLeft()
@@ -51,7 +50,7 @@ func (g *Game) Update() error {
 		case DOWN:
 			g.board.DropPiece()
 			g.searchGameOver()
-			if !g.gameOver {
+			if g.result == UNKNOWNRESULT {
 				g.board.ChangePlayer()
 			}
 		}
@@ -66,8 +65,8 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	if g.gameOver {
-		ebitenutil.DebugPrint(screen, "Game ended!")
+	if g.result != UNKNOWNRESULT {
+		g.result.Draw(screen)
 		return
 	}
 	wBoard, hBoard := g.board.Size()
@@ -99,11 +98,14 @@ func (g *Game) Start() {
 
 func (g *Game) searchGameOver() {
 	if g.board.IsFinished() {
-		g.gameOver = true
+		g.result = Result(g.board.currentPlayer)
+	}
+	if g.board.IsFull() {
+		g.result = DRAW
 	}
 }
 
 func (g *Game) Reset() {
 	g.board.Reset()
-	g.gameOver = false
+	g.result = UNKNOWNRESULT
 }
