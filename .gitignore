@@ -1,7 +1,1 @@
 dist/
-.env*
-.aws*
-
-# localstack
-**/volume
-output.txt

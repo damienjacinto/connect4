@@ -1,40 +1,77 @@
 package game
 
 import (
+	"image/color"
+	"log/slog"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
+)
+
+const (
+	widthBoard, heightBoard = 7, 6
 )
 
 // Game implements ebiten.Game interface.
-type Game struct{}
+type Game struct {
+	width, height int
+	title         string
+	inited        bool
+	board         *Board
+}
 
-// Update proceeds the game state.
-// Update is called every tick (1/60 [s] by default).
+func NewGame(width int, height int, title string) *Game {
+	return &Game{
+		width:  width,
+		height: height,
+		title:  title,
+		inited: false,
+	}
+}
+
 func (g *Game) Update() error {
-	// Write your game's logical update.
+	if !g.inited {
+		g.init()
+	}
+
+	input := HandleInput()
+	switch input {
+	case LEFT:
+		slog.Info("left")
+	case RIGHT:
+		slog.Info("right")
+	case DOWN:
+		slog.Info("down")
+	}
 	return nil
 }
 
-// Draw draws the game screen.
-// Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, "Hello, World!")
-	// Write your game's rendering.
+	g.board.Print()
+
+	vector.DrawFilledRect(screen, 10.0, 10.0, 50, 50, color.White, true)
+	vector.DrawFilledCircle(screen, 35, 35, 20, color.Black, true)
 }
 
-// Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
-// If you don't have to adjust the screen size with the outside size, just return a fixed size.
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 320, 240
+	return g.width, g.height
 }
 
 func (g *Game) init() {
-	ebiten.SetWindowSize(640, 480)
-	ebiten.SetWindowTitle("Hello, World!")
+	defer func() {
+		g.inited = true
+	}()
+
+	ebiten.SetWindowSize(g.width, g.height)
+	ebiten.SetWindowTitle(g.title)
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+
+	g.board = NewBoard(widthBoard, heightBoard)
 }
 
 func (g *Game) Start() {
-	g.init()
 	if err := ebiten.RunGame(g); err != nil {
 		panic(err)
 	}
