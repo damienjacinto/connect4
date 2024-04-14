@@ -19,7 +19,7 @@ type Game struct {
 	width, height int
 	title         string
 	inited        bool
-	board         *Board
+	board         *GameBoard
 	inputs        *Inputs
 	result        Result
 }
@@ -86,7 +86,7 @@ func (g *Game) init() {
 	ebiten.SetWindowTitle(g.title)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
-	g.board = NewBoard(colorBoard, sizeElement, padding)
+	g.board = NewGameBoard(colorBoard, sizeElement, padding)
 	g.inputs = NewInput()
 }
 
@@ -97,15 +97,10 @@ func (g *Game) Start() {
 }
 
 func (g *Game) searchGameOver() {
-	if g.board.IsFinished() {
-		g.result = Result(g.board.currentPlayer)
-	}
-	if g.board.IsFull() {
-		g.result = DRAW
-	}
+	g.result = g.board.GetResult()
 }
 
 func (g *Game) Reset() {
-	g.board.Reset()
+	g.board.NewGame()
 	g.result = UNKNOWNRESULT
 }

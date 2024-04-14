@@ -1,155 +1,80 @@
 package game
 
-import (
-	"fmt"
-	"image/color"
-	"math/rand/v2"
+import "math/rand/v2"
 
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
-)
-
-const (
-	width, height = 7, 6
-	paddingHeader = 40.0
-)
+const width, height = 7, 6
 
 type Board struct {
-	width, height int
-	board         [][]int
-	colorBoard    color.RGBA
-	sizeElement   float32
-	padding       float32
-	header        *Header
-	currentPlayer int
+	state [][]int
 }
 
-func NewBoard(colorBoard color.RGBA, sizeElement float32, padding float32) *Board {
+func NewBoard() *Board {
 	board := make([][]int, height)
 	for i := range board {
 		board[i] = make([]int, width)
 	}
 
-	header := NewHeader(sizeElement, padding, width)
-
 	return &Board{
-		width:         width,
-		height:        height,
-		board:         board,
-		colorBoard:    colorBoard,
-		sizeElement:   sizeElement,
-		padding:       padding,
-		header:        header,
-		currentPlayer: 1,
+		state: board,
 	}
+}
+
+func (b *Board) GetBoard() [][]int {
+	return b.state
 }
 
 func (b *Board) Random() {
-	for i := range b.height {
-		for j := range b.width {
-			b.board[i][j] = rand.IntN(3)
+	for i := range height {
+		for j := range width {
+			b.state[i][j] = rand.IntN(3)
 		}
 	}
 }
 
-func (b *Board) Print() {
-	fmt.Println("-----------------")
-	for i := range b.height {
-		for j := range b.width {
-			fmt.Printf("%d ", b.board[i][j])
+func (b *Board) Reset() {
+	for i := range height {
+		for j := range width {
+			b.state[i][j] = 0
 		}
-		fmt.Printf("\n")
-	}
-	fmt.Println("-----------------")
-}
-
-func (b *Board) Size() (float32, float32) {
-	return float32(b.width)*b.sizeElement + float32((b.width-1))*b.padding, float32(b.height)*b.sizeElement + float32((b.height-1))*padding
-}
-
-func (b *Board) Draw(screen *ebiten.Image, initx float32, inity float32) {
-	x := initx
-	y := inity + 40
-
-	middleScreen := initx + (float32(b.width)*b.sizeElement+float32((b.width-1))*b.padding)/2
-	b.header.Draw(screen, middleScreen, paddingHeader, b.currentPlayer)
-
-	for i := 0; i < b.height; i++ {
-		for j := 0; j < b.width; j++ {
-			drawSlot(screen, x, y, b.sizeElement, b.colorBoard, b.board[i][j])
-			x += b.sizeElement + b.padding
-		}
-		x = initx
-		y += b.sizeElement + b.padding
-	}
-}
-
-func drawSlot(screen *ebiten.Image, x, y, size float32, clr color.Color, player int) {
-	vector.DrawFilledRect(screen, x, y, size, size, clr, true)
-	switch player {
-	case 1:
-		vector.DrawFilledCircle(screen, x+size/2, y+size/2, size/2.5, player1, true)
-	case 2:
-		vector.DrawFilledCircle(screen, x+size/2, y+size/2, size/2.5, player2, true)
-	default:
-		vector.DrawFilledCircle(screen, x+size/2, y+size/2, size/2.5, color.Black, true)
 	}
 }
 
 func (b *Board) GetWidth() int {
-	return b.width
+	return width
 }
 
-func (b *Board) MoveLeft() {
-	b.header.MoveLeft()
-}
-
-func (b *Board) MoveRight() {
-	b.header.MoveRight()
-}
-
-func (b *Board) DropPiece() error {
-	i := b.height - 1
-	for ; i > 0; i-- {
-		if b.board[i][b.header.positionPiece] == 0 {
-			break
-		}
-	}
-	if b.board[i][b.header.positionPiece] != 0 {
-		return fmt.Errorf("column is full")
-	}
-	b.board[i][b.header.positionPiece] = b.currentPlayer
-	return nil
+func (b *Board) GetHeigth() int {
+	return height
 }
 
 func (b *Board) IsFinished() bool {
 	// Check horizontal
-	for i := 0; i < b.height; i++ {
-		for j := 0; j < b.width-3; j++ {
-			if b.board[i][j] != 0 && b.board[i][j] == b.board[i][j+1] && b.board[i][j] == b.board[i][j+2] && b.board[i][j] == b.board[i][j+3] {
+	for i := 0; i < height; i++ {
+		for j := 0; j < width-3; j++ {
+			if b.state[i][j] != 0 && b.state[i][j] == b.state[i][j+1] && b.state[i][j] == b.state[i][j+2] && b.state[i][j] == b.state[i][j+3] {
 				return true
 			}
 		}
 	}
 	// Check vertical
-	for i := 0; i < b.height-3; i++ {
-		for j := 0; j < b.width; j++ {
-			if b.board[i][j] != 0 && b.board[i][j] == b.board[i+1][j] && b.board[i][j] == b.board[i+2][j] && b.board[i][j] == b.board[i+3][j] {
+	for i := 0; i < height-3; i++ {
+		for j := 0; j < width; j++ {
+			if b.state[i][j] != 0 && b.state[i][j] == b.state[i+1][j] && b.state[i][j] == b.state[i+2][j] && b.state[i][j] == b.state[i+3][j] {
 				return true
 			}
 		}
 	}
 	// Check diagonal
-	for i := 0; i < b.height-3; i++ {
-		for j := 0; j < b.width-3; j++ {
-			if b.board[i][j] != 0 && b.board[i][j] == b.board[i+1][j+1] && b.board[i][j] == b.board[i+2][j+2] && b.board[i][j] == b.board[i+3][j+3] {
+	for i := 0; i < height-3; i++ {
+		for j := 0; j < width-3; j++ {
+			if b.state[i][j] != 0 && b.state[i][j] == b.state[i+1][j+1] && b.state[i][j] == b.state[i+2][j+2] && b.state[i][j] == b.state[i+3][j+3] {
 				return true
 			}
 		}
 	}
-	for i := 0; i < b.height-3; i++ {
-		for j := 3; j < b.width; j++ {
-			if b.board[i][j] != 0 && b.board[i][j] == b.board[i+1][j-1] && b.board[i][j] == b.board[i+2][j-2] && b.board[i][j] == b.board[i+3][j-3] {
+	for i := 0; i < height-3; i++ {
+		for j := 3; j < width; j++ {
+			if b.state[i][j] != 0 && b.state[i][j] == b.state[i+1][j-1] && b.state[i][j] == b.state[i+2][j-2] && b.state[i][j] == b.state[i+3][j-3] {
 				return true
 			}
 		}
@@ -157,30 +82,24 @@ func (b *Board) IsFinished() bool {
 	return false
 }
 
-func (b *Board) ChangePlayer() {
-	b.currentPlayer = b.currentPlayer + 1
-	if b.currentPlayer > 2 {
-		b.currentPlayer = 1
-	}
-}
-
-func (b *Board) Reset() {
-	for i := range b.height {
-		for j := range b.width {
-			b.board[i][j] = 0
-		}
-	}
-	b.header.Reset()
-	b.currentPlayer = 1
-}
-
 func (b *Board) IsFull() bool {
-	for i := range b.height {
-		for j := range b.width {
-			if b.board[i][j] == 0 {
+	for i := range height {
+		for j := range width {
+			if b.state[i][j] == 0 {
 				return false
 			}
 		}
 	}
 	return true
+}
+
+func (b *Board) Copy() *Board {
+	board := make([][]int, height)
+	for i := range height {
+		board[i] = make([]int, width)
+		copy(board[i], b.state[i])
+	}
+	return &Board{
+		state: board,
+	}
 }
