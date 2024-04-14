@@ -1,12 +1,15 @@
 package player
 
 import (
+	"fmt"
 	"image/color"
-	"math/rand/v2"
+	"math"
 	"time"
 
 	"github.com/damienjacinto/connect4/internal/board"
 )
+
+const maxDepth = 5
 
 type MinMaxIAPlayer struct {
 	Player
@@ -24,10 +27,61 @@ func NewMinMaxIAPlayer(color color.RGBA, value int) IAPlayer {
 	}
 }
 
+func (p *MinMaxIAPlayer) construct(n *board.Node, depth int, player int) *board.Node {
+	if depth < maxDepth && !n.Data.IsFinished() && !n.Data.IsFull() {
+		depth++
+		nextPlayer := (player % 2) + 1
+
+		moves := n.Data.GetAvailableMoves()
+		for _, m := range moves {
+			newBoard := n.Data.Copy()
+			newBoard.Play(m, player)
+			child := board.NewNode(newBoard, depth, m)
+			n.AddChild(p.construct(child, depth, nextPlayer))
+		}
+	}
+	return n
+}
+
+func (p *MinMaxIAPlayer) minmax(n *board.Node, player int) (int, int) {
+	var score int = 0
+	var bestMove int = n.Move
+	if len(n.Childs) == 0 {
+		return bestMove, n.Data.GetEvaluation(p.value)
+	} else {
+		nextPlayer := (player % 2) + 1
+		if nextPlayer != p.value {
+			score = math.MinInt
+			for _, child := range n.Childs {
+				_, eval := p.minmax(child, nextPlayer)
+				if eval > score {
+					score = eval
+					bestMove = child.Move
+				}
+			}
+		} else {
+			score = math.MaxInt
+			for _, child := range n.Childs {
+				_, eval := p.minmax(child, nextPlayer)
+				if eval < score {
+					score = eval
+					bestMove = child.Move
+				}
+			}
+		}
+		return bestMove, score
+	}
+}
+
 func (p *MinMaxIAPlayer) Play(b *board.Board) int {
-	moves := b.GetAvailableMoves()
-	time.Sleep(1000 * time.Millisecond)
-	return moves[rand.IntN(len(moves))]
+	startTime := time.Now()
+	depth := 0
+	tree := board.NewNode(b, depth, 0)
+	p.construct(tree, depth, p.value)
+
+	move, _ := p.minmax(tree, p.value)
+	fmt.Println("Time to play : ", time.Since(startTime))
+	return move
 }
 
 func (p *MinMaxIAPlayer) GetColor() color.RGBA {

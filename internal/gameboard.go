@@ -115,17 +115,7 @@ func (b *GameBoard) MoveRight() {
 }
 
 func (b *GameBoard) Play(col int) error {
-	i := b.board.GetHeigth() - 1
-	for ; i > 0; i-- {
-		if b.board.GetBoard()[i][col] == 0 {
-			break
-		}
-	}
-	if b.board.GetBoard()[i][col] != 0 {
-		return fmt.Errorf("column is full")
-	}
-	b.board.GetBoard()[i][col] = b.currentPlayer.GetValue()
-	return nil
+	return b.board.Play(col, b.currentPlayer.GetValue())
 }
 
 func (b *GameBoard) ChangePlayer() {
