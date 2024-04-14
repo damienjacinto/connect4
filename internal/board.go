@@ -1,7 +1,5 @@
 package game
 
-import "math/rand/v2"
-
 const width, height = 7, 6
 
 type Board struct {
@@ -21,14 +19,6 @@ func NewBoard() *Board {
 
 func (b *Board) GetBoard() [][]int {
 	return b.state
-}
-
-func (b *Board) Random() {
-	for i := range height {
-		for j := range width {
-			b.state[i][j] = rand.IntN(3)
-		}
-	}
 }
 
 func (b *Board) Reset() {

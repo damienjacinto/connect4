@@ -1,6 +1,7 @@
 package game
 
 import (
+	"github.com/damienjacinto/connect4/internal/player"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
@@ -21,7 +22,7 @@ func NewHeader(size float32, boardPadding float32, widthBoard int) *Header {
 	}
 }
 
-func (h *Header) Draw(screen *ebiten.Image, initx float32, inity float32, currentPlayer int) {
+func (h *Header) Draw(screen *ebiten.Image, initx float32, inity float32, currentPlayer player.IPlayer) {
 	x := initx + float32(h.positionPiece-(h.width/2))*(h.sizeElement*1.5+h.boardPadding)
 	y := inity
 	drawPiece(screen, x, y, h.sizeElement, currentPlayer)
@@ -39,13 +40,8 @@ func (h *Header) MoveRight() {
 	}
 }
 
-func drawPiece(screen *ebiten.Image, x, y, size float32, currentPlayer int) {
-	switch currentPlayer {
-	case 1:
-		vector.DrawFilledCircle(screen, x, y, size/2, player1, true)
-	case 2:
-		vector.DrawFilledCircle(screen, x, y, size/2, player2, true)
-	}
+func drawPiece(screen *ebiten.Image, x, y, size float32, currentPlayer player.IPlayer) {
+	vector.DrawFilledCircle(screen, x, y, size/2, currentPlayer.GetColor(), true)
 }
 
 func (h *Header) Reset() {

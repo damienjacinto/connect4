@@ -58,3 +58,15 @@ func (r Result) Draw(screen *ebiten.Image) {
 		ebitenutil.DebugPrint(screen, "Game over, draw !")
 	}
 }
+
+func (r Result) FormatResult() string {
+	switch r {
+	case PLAYER1:
+		return "Game over, player 1 wins !"
+	case PLAYER2:
+		return "Game over, player 2 wins !"
+	case DRAW:
+		return "Game over, draw !"
+	}
+	return ""
+}

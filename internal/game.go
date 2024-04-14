@@ -3,6 +3,7 @@ package game
 import (
 	"image/color"
 
+	"github.com/damienjacinto/connect4/internal/player"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -22,6 +23,7 @@ type Game struct {
 	board         *GameBoard
 	inputs        *Inputs
 	result        Result
+	currentError  string
 }
 
 func NewGame(width int, height int, title string) *Game {
@@ -34,22 +36,58 @@ func NewGame(width int, height int, title string) *Game {
 	}
 }
 
+func (g *Game) humanMove(input Direction) (bool, error) {
+	human := g.board.currentPlayer.(*player.HumanPlayer)
+	switch input {
+	case LEFT:
+		g.board.MoveLeft()
+	case RIGHT:
+		g.board.MoveRight()
+	case DOWN:
+		human.SetMove(g.board.header.positionPiece)
+		col := human.Play()
+		if err := g.board.Play(col); err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+	return false, nil
+}
+
+func (g *Game) computerMove() (bool, error) {
+	ai := g.board.currentPlayer.(player.IAPlayer)
+	col := ai.Play()
+	if err := g.board.Play(col); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (g *Game) Update() error {
 	if !g.inited {
 		g.init()
 	}
 
+	moved := false
+	var err error
 	input := g.inputs.HandleInput()
 
 	if g.result == UNKNOWNRESULT {
-		switch input {
-		case LEFT:
-			g.board.MoveLeft()
-		case RIGHT:
-			g.board.MoveRight()
-		case DOWN:
-			g.board.DropPiece()
-			g.searchGameOver()
+		if g.board.IsCurrentPlayerHuman() {
+			moved, err = g.humanMove(input)
+			if err != nil {
+				g.currentError = err.Error()
+			}
+		} else if g.board.IsCurrentPlayerAI() {
+			moved, err = g.computerMove()
+			if err != nil {
+				g.currentError = err.Error()
+			}
+		}
+
+		if moved {
+			g.currentError = ""
+			g.updateResult()
 			if g.result == UNKNOWNRESULT {
 				g.board.ChangePlayer()
 			}
@@ -65,12 +103,9 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	if g.result != UNKNOWNRESULT {
-		g.result.Draw(screen)
-		return
-	}
+	resultValue := g.result.FormatResult()
 	wBoard, hBoard := g.board.Size()
-	g.board.Draw(screen, (float32(g.width)-wBoard)/2, (float32(g.height)-hBoard)/2)
+	g.board.Draw(screen, (float32(g.width)-wBoard)/2, (float32(g.height)-hBoard)/2, resultValue, g.currentError)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -96,7 +131,7 @@ func (g *Game) Start() {
 	}
 }
 
-func (g *Game) searchGameOver() {
+func (g *Game) updateResult() {
 	g.result = g.board.GetResult()
 }
 
