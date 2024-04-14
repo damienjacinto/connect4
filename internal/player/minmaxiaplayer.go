@@ -13,8 +13,8 @@ type MinMaxIAPlayer struct {
 	iatype iatype
 }
 
-func NewMinMaxIAPlayer(color color.RGBA, value int) IPlayer {
-	return &RandomAIPlayer{
+func NewMinMaxIAPlayer(color color.RGBA, value int) IAPlayer {
+	return &MinMaxIAPlayer{
 		Player{
 			color: color,
 			value: value,
@@ -24,9 +24,10 @@ func NewMinMaxIAPlayer(color color.RGBA, value int) IPlayer {
 	}
 }
 
-func (p *MinMaxIAPlayer) Play(b ...board.Board) int {
+func (p *MinMaxIAPlayer) Play(b *board.Board) int {
+	moves := b.GetAvailableMoves()
 	time.Sleep(1000 * time.Millisecond)
-	return rand.IntN(6)
+	return moves[rand.IntN(len(moves))]
 }
 
 func (p *MinMaxIAPlayer) GetColor() color.RGBA {

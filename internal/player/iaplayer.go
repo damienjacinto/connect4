@@ -1,6 +1,7 @@
 package player
 
 import (
+	"fmt"
 	"image/color"
 )
 
@@ -12,10 +13,13 @@ type IAPlayer interface {
 func NewAIPlayer(color color.RGBA, value int, ia iatype) IAPlayer {
 	switch ia {
 	case RANDOM:
-		return NewRandomAIPlayer(color, value).(IAPlayer)
+		fmt.Println("Random computer")
+		return NewRandomAIPlayer(color, value)
 	case MINMAX:
-		return NewMinMaxIAPlayer(color, value).(IAPlayer)
+		fmt.Println("Minmax computer")
+		return NewMinMaxIAPlayer(color, value)
 	default:
-		return NewRandomAIPlayer(color, value).(IAPlayer)
+		fmt.Println("Default computer")
+		return NewRandomAIPlayer(color, value)
 	}
 }

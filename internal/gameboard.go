@@ -35,7 +35,7 @@ func NewGameBoard(colorBoard color.RGBA, sizeElement float32, padding float32) *
 	board := board.NewBoard()
 	header := NewHeader(sizeElement, padding, board.GetWidth())
 	player1 := player.NewHumanPlayer(red, 1, "Player 1")
-	player2 := player.NewAIPlayer(yellow, 2, player.RANDOM)
+	player2 := player.NewAIPlayer(yellow, 2, player.MINMAX)
 
 	return &GameBoard{
 		board:         board,

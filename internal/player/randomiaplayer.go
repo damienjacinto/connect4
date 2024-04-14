@@ -13,7 +13,7 @@ type RandomAIPlayer struct {
 	iatype iatype
 }
 
-func NewRandomAIPlayer(color color.RGBA, value int) IPlayer {
+func NewRandomAIPlayer(color color.RGBA, value int) IAPlayer {
 	return &RandomAIPlayer{
 		Player{
 			color: color,
@@ -24,9 +24,10 @@ func NewRandomAIPlayer(color color.RGBA, value int) IPlayer {
 	}
 }
 
-func (p *RandomAIPlayer) Play(b ...board.Board) int {
+func (p *RandomAIPlayer) Play(b *board.Board) int {
+	moves := b.GetAvailableMoves()
 	time.Sleep(1000 * time.Millisecond)
-	return rand.IntN(6)
+	return moves[rand.IntN(len(moves))]
 }
 
 func (p *RandomAIPlayer) GetColor() color.RGBA {
