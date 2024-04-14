@@ -19,12 +19,14 @@ const (
 	NONE
 	LEFT
 	RIGHT
+	QUIT
 	DOWN
 )
 
 const (
 	LeftString  = "left"
 	RightString = "right"
+	QuitString  = "quit"
 	DownString  = "down"
 	NoneString  = "none"
 )
@@ -37,6 +39,8 @@ func (d Direction) String() string {
 		return RightString
 	case DOWN:
 		return DownString
+	case QUIT:
+		return QuitString
 	case NONE:
 		return NoneString
 	default:
@@ -52,6 +56,8 @@ func ParseDirection(direction string) (Direction, error) {
 		return RIGHT, nil
 	case DownString:
 		return DOWN, nil
+	case QuitString:
+		return QUIT, nil
 	case NoneString:
 		return NONE, nil
 	default:
@@ -75,6 +81,11 @@ func (i *Inputs) HandleInput() Direction {
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) && !i.pressed {
 		i.pressed = true
 		return RIGHT
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && !i.pressed {
+		i.pressed = true
+		return QUIT
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) && !i.pressed {

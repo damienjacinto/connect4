@@ -1,12 +1,16 @@
 package player
 
-import "image/color"
+import (
+	"image/color"
+
+	"github.com/damienjacinto/connect4/internal/board"
+)
 
 type IPlayer interface {
 	GetColor() color.RGBA
 	GetValue() int
 	GetName() string
-	Play() int
+	Play(b ...board.Board) int
 }
 
 type Player struct {
@@ -35,7 +39,7 @@ func (p *HumanPlayer) SetMove(move int) {
 	p.move = move
 }
 
-func (p *HumanPlayer) Play() int {
+func (p *HumanPlayer) Play(b ...board.Board) int {
 	return p.move
 }
 

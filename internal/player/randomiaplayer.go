@@ -4,6 +4,8 @@ import (
 	"image/color"
 	"math/rand/v2"
 	"time"
+
+	"github.com/damienjacinto/connect4/internal/board"
 )
 
 type RandomAIPlayer struct {
@@ -22,7 +24,7 @@ func NewRandomAIPlayer(color color.RGBA, value int) IPlayer {
 	}
 }
 
-func (p *RandomAIPlayer) Play() int {
+func (p *RandomAIPlayer) Play(b ...board.Board) int {
 	time.Sleep(1000 * time.Millisecond)
 	return rand.IntN(6)
 }
@@ -37,4 +39,8 @@ func (p *RandomAIPlayer) GetValue() int {
 
 func (p *RandomAIPlayer) GetName() string {
 	return p.name
+}
+
+func (p *RandomAIPlayer) GetType() iatype {
+	return p.iatype
 }

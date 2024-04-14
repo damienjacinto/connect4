@@ -23,7 +23,7 @@ type Game struct {
 	board         *GameBoard
 	inputs        *Inputs
 	result        Result
-	currentError  string
+	info          string
 }
 
 func NewGame(width int, height int, title string) *Game {
@@ -43,6 +43,8 @@ func (g *Game) humanMove(input Direction) (bool, error) {
 		g.board.MoveLeft()
 	case RIGHT:
 		g.board.MoveRight()
+	case QUIT:
+		return false, ebiten.Termination
 	case DOWN:
 		human.SetMove(g.board.header.positionPiece)
 		col := human.Play()
@@ -56,7 +58,7 @@ func (g *Game) humanMove(input Direction) (bool, error) {
 
 func (g *Game) computerMove() (bool, error) {
 	ai := g.board.currentPlayer.(player.IAPlayer)
-	col := ai.Play()
+	col := ai.Play(*g.board.GetBoard())
 	if err := g.board.Play(col); err != nil {
 		return false, err
 	}
@@ -75,22 +77,24 @@ func (g *Game) Update() error {
 	if g.result == UNKNOWNRESULT {
 		if g.board.IsCurrentPlayerHuman() {
 			moved, err = g.humanMove(input)
-			if err != nil {
-				g.currentError = err.Error()
+			if err == ebiten.Termination {
+				return err
+			} else if err != nil {
+				g.info = err.Error()
 			}
 		} else if g.board.IsCurrentPlayerAI() {
 			moved, err = g.computerMove()
 			if err != nil {
-				g.currentError = err.Error()
+				g.info = err.Error()
 			}
 		}
 
 		if moved {
-			g.currentError = ""
 			g.updateResult()
 			if g.result == UNKNOWNRESULT {
 				g.board.ChangePlayer()
 			}
+			g.updateInfo()
 		}
 	} else {
 		switch input {
@@ -102,10 +106,13 @@ func (g *Game) Update() error {
 	return nil
 }
 
+func (g *Game) updateInfo() {
+	g.info = g.board.currentPlayer.GetName() + " turn"
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	resultValue := g.result.FormatResult()
-	wBoard, hBoard := g.board.Size()
-	g.board.Draw(screen, (float32(g.width)-wBoard)/2, (float32(g.height)-hBoard)/2, resultValue, g.currentError)
+	g.board.Draw(screen, g.width, g.height, resultValue, g.info)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -121,8 +128,9 @@ func (g *Game) init() {
 	ebiten.SetWindowTitle(g.title)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
-	g.board = NewGameBoard(colorBoard, sizeElement, padding)
 	g.inputs = NewInput()
+	g.board = NewGameBoard(colorBoard, sizeElement, padding)
+	g.updateInfo()
 }
 
 func (g *Game) Start() {
@@ -138,4 +146,5 @@ func (g *Game) updateResult() {
 func (g *Game) Reset() {
 	g.board.NewGame()
 	g.result = UNKNOWNRESULT
+	g.updateInfo()
 }

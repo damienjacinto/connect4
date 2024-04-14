@@ -1,4 +1,4 @@
-package game
+package board
 
 const width, height = 7, 6
 
@@ -92,4 +92,14 @@ func (b *Board) Copy() *Board {
 	return &Board{
 		state: board,
 	}
+}
+
+func (b *Board) GetAvailableMoves() []int {
+	var moves []int
+	for i := range width {
+		if b.state[0][i] == 0 {
+			moves = append(moves, i)
+		}
+	}
+	return moves
 }

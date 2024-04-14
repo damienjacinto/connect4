@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 
+	"github.com/damienjacinto/connect4/internal/board"
 	"github.com/damienjacinto/connect4/internal/player"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -20,8 +21,7 @@ var (
 )
 
 type GameBoard struct {
-	width, height int
-	board         *Board
+	board         *board.Board
 	colorBoard    color.RGBA
 	sizeElement   float32
 	padding       float32
@@ -32,16 +32,13 @@ type GameBoard struct {
 }
 
 func NewGameBoard(colorBoard color.RGBA, sizeElement float32, padding float32) *GameBoard {
-	board := NewBoard()
+	board := board.NewBoard()
 	header := NewHeader(sizeElement, padding, board.GetWidth())
 	player1 := player.NewHumanPlayer(red, 1, "Player 1")
-	//player2 := NewHumanPlayer(yellow, 2, "Player 2")
 	player2 := player.NewAIPlayer(yellow, 2, player.RANDOM)
 
 	return &GameBoard{
-		width:         width,
-		height:        height,
-		board:         NewBoard(),
+		board:         board,
 		colorBoard:    colorBoard,
 		sizeElement:   sizeElement,
 		padding:       padding,
@@ -54,8 +51,8 @@ func NewGameBoard(colorBoard color.RGBA, sizeElement float32, padding float32) *
 
 func (b *GameBoard) Print() {
 	fmt.Println("-----------------")
-	for i := range b.height {
-		for j := range b.width {
+	for i := range b.board.GetHeigth() {
+		for j := range b.board.GetWidth() {
 			fmt.Printf("%d ", b.board.GetBoard()[i][j])
 		}
 		fmt.Printf("\n")
@@ -64,26 +61,31 @@ func (b *GameBoard) Print() {
 }
 
 func (b *GameBoard) Size() (float32, float32) {
-	return float32(b.width)*b.sizeElement + float32((b.width-1))*b.padding, float32(b.height)*b.sizeElement + float32((b.height-1))*padding
+	return float32(b.board.GetWidth())*b.sizeElement + float32((b.board.GetWidth()-1))*b.padding, float32(b.board.GetHeigth())*b.sizeElement + float32((b.board.GetHeigth()-1))*padding
 }
 
-func (b *GameBoard) Draw(screen *ebiten.Image, initx float32, inity float32, endscreen string, currentError string) {
+func (b *GameBoard) Draw(screen *ebiten.Image, wScreen int, hScreen int, endscreen string, info string) {
+
+	wBoard, hBoard := b.Size()
+	initx := (float32(wScreen) - wBoard) / 2
+	inity := (float32(hScreen) - hBoard) / 2
+
 	x := initx
 	y := inity + 40
 
-	if currentError != "" && endscreen == "" {
-		ebitenutil.DebugPrint(screen, currentError)
+	if info != "" && endscreen == "" {
+		ebitenutil.DebugPrint(screen, info)
 	}
 
 	if endscreen != "" {
 		ebitenutil.DebugPrint(screen, endscreen)
 	} else {
-		middleScreen := initx + (float32(b.width)*b.sizeElement+float32((b.width-1))*b.padding)/2
+		middleScreen := initx + (float32(b.board.GetWidth())*b.sizeElement+float32((b.board.GetWidth()-1))*b.padding)/2
 		b.header.Draw(screen, middleScreen, paddingHeader, b.currentPlayer)
 	}
 
-	for i := 0; i < b.height; i++ {
-		for j := 0; j < b.width; j++ {
+	for i := 0; i < b.board.GetHeigth(); i++ {
+		for j := 0; j < b.board.GetWidth(); j++ {
 			b.drawSlot(screen, x, y, b.sizeElement, b.colorBoard, b.board.GetBoard()[i][j])
 			x += b.sizeElement + b.padding
 		}
@@ -113,7 +115,7 @@ func (b *GameBoard) MoveRight() {
 }
 
 func (b *GameBoard) Play(col int) error {
-	i := b.height - 1
+	i := b.board.GetHeigth() - 1
 	for ; i > 0; i-- {
 		if b.board.GetBoard()[i][col] == 0 {
 			break
@@ -158,4 +160,8 @@ func (b *GameBoard) IsCurrentPlayerHuman() bool {
 func (b *GameBoard) IsCurrentPlayerAI() bool {
 	_, ok := b.currentPlayer.(player.IAPlayer)
 	return ok
+}
+
+func (b *GameBoard) GetBoard() *board.Board {
+	return b.board
 }
