@@ -9,23 +9,23 @@ import (
 	"github.com/damienjacinto/connect4/internal/board"
 )
 
-type MinMaxIAPlayer struct {
+type AlphaBetaIAPlayer struct {
 	Player
 	iatype iatype
 }
 
-func NewMinMaxIAPlayer(color color.RGBA, value int) IAPlayer {
-	return &MinMaxIAPlayer{
+func NewAlphaBetaIAPlayer(color color.RGBA, value int) IAPlayer {
+	return &AlphaBetaIAPlayer{
 		Player{
 			color: color,
 			value: value,
-			name:  MINMAX.String(),
+			name:  ALPHABETA.String(),
 		},
-		MINMAX,
+		ALPHABETA,
 	}
 }
 
-func (p *MinMaxIAPlayer) construct(n *board.Node, depth int, player int) *board.Node {
+func (p *AlphaBetaIAPlayer) construct(n *board.Node, depth int, player int) *board.Node {
 	if depth < maxDepth && !n.Data.IsFinished() && !n.Data.IsFull() {
 		depth++
 		nextPlayer := (player % 2) + 1
@@ -41,7 +41,7 @@ func (p *MinMaxIAPlayer) construct(n *board.Node, depth int, player int) *board.
 	return n
 }
 
-func (p *MinMaxIAPlayer) minmax(n *board.Node, player int) (int, int) {
+func (p *AlphaBetaIAPlayer) alphabeta(n *board.Node, player int, alpha int, beta int) (int, int) {
 	var score int = 0
 	var bestMove int = n.Move
 	if len(n.Childs) == 0 {
@@ -51,7 +51,12 @@ func (p *MinMaxIAPlayer) minmax(n *board.Node, player int) (int, int) {
 		if nextPlayer != p.value {
 			score = math.MinInt
 			for _, child := range n.Childs {
-				_, eval := p.minmax(child, nextPlayer)
+				_, eval := p.alphabeta(child, nextPlayer, alpha, beta)
+				if eval >= beta {
+					score = eval
+					bestMove = child.Move
+					break
+				}
 				if eval > score {
 					score = eval
 					bestMove = child.Move
@@ -60,7 +65,12 @@ func (p *MinMaxIAPlayer) minmax(n *board.Node, player int) (int, int) {
 		} else {
 			score = math.MaxInt
 			for _, child := range n.Childs {
-				_, eval := p.minmax(child, nextPlayer)
+				_, eval := p.alphabeta(child, nextPlayer, alpha, beta)
+				if eval <= alpha {
+					score = eval
+					bestMove = child.Move
+					break
+				}
 				if eval < score {
 					score = eval
 					bestMove = child.Move
@@ -71,29 +81,29 @@ func (p *MinMaxIAPlayer) minmax(n *board.Node, player int) (int, int) {
 	}
 }
 
-func (p *MinMaxIAPlayer) Play(b *board.Board) int {
+func (p *AlphaBetaIAPlayer) Play(b *board.Board) int {
 	startTime := time.Now()
 	depth := 0
 	tree := board.NewNode(b, depth, 0)
 	p.construct(tree, depth, p.value)
 
-	move, _ := p.minmax(tree, p.value)
+	move, _ := p.alphabeta(tree, p.value, -20000, 4000)
 	fmt.Println("Time to play : ", time.Since(startTime))
 	return move
 }
 
-func (p *MinMaxIAPlayer) GetColor() color.RGBA {
+func (p *AlphaBetaIAPlayer) GetColor() color.RGBA {
 	return p.color
 }
 
-func (p *MinMaxIAPlayer) GetValue() int {
+func (p *AlphaBetaIAPlayer) GetValue() int {
 	return p.value
 }
 
-func (p *MinMaxIAPlayer) GetName() string {
+func (p *AlphaBetaIAPlayer) GetName() string {
 	return p.name
 }
 
-func (p *MinMaxIAPlayer) GetType() iatype {
+func (p *AlphaBetaIAPlayer) GetType() iatype {
 	return p.iatype
 }

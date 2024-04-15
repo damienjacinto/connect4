@@ -8,11 +8,13 @@ const (
 	UNKNOWNIA iatype = iota
 	RANDOM
 	MINMAX
+	ALPHABETA
 )
 
 const (
-	RandomString = "Random"
-	MINMAXString = "MinMax"
+	RandomString    = "Random"
+	MINMAXString    = "MinMax"
+	ALPHABETAString = "AlphaBeta"
 )
 
 func (r iatype) String() string {
@@ -21,6 +23,8 @@ func (r iatype) String() string {
 		return RandomString
 	case MINMAX:
 		return MINMAXString
+	case ALPHABETA:
+		return ALPHABETAString
 	default:
 		panic("unhandled default case")
 	}
@@ -32,6 +36,8 @@ func ParseAIType(ia string) (iatype, error) {
 		return RANDOM, nil
 	case MINMAXString:
 		return MINMAX, nil
+	case ALPHABETAString:
+		return ALPHABETA, nil
 	default:
 		return UNKNOWNIA, fmt.Errorf("unknown ia: %s", ia)
 	}

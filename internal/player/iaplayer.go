@@ -5,21 +5,23 @@ import (
 	"image/color"
 )
 
+const maxDepth = 5
+
 type IAPlayer interface {
 	IPlayer
 	GetType() iatype
 }
 
 func NewAIPlayer(color color.RGBA, value int, ia iatype) IAPlayer {
+	fmt.Printf("%s computer", ia.String())
 	switch ia {
 	case RANDOM:
-		fmt.Println("Random computer")
 		return NewRandomAIPlayer(color, value)
 	case MINMAX:
-		fmt.Println("Minmax computer")
 		return NewMinMaxIAPlayer(color, value)
+	case ALPHABETA:
+		return NewAlphaBetaIAPlayer(color, value)
 	default:
-		fmt.Println("Default computer")
 		return NewRandomAIPlayer(color, value)
 	}
 }
