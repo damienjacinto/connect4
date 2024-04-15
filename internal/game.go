@@ -99,6 +99,8 @@ func (g *Game) Update() error {
 		switch input {
 		case DOWN:
 			g.Reset()
+		case QUIT:
+			return ebiten.Termination
 		}
 	}
 

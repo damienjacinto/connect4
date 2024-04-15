@@ -53,7 +53,7 @@ func (p *AlphaBetaIAPlayer) alphabeta(n *board.Node, player int, alpha int, beta
 			for _, child := range n.Childs {
 				_, eval := p.alphabeta(child, nextPlayer, alpha, beta)
 				if eval >= beta {
-					score = eval
+					score = beta
 					bestMove = child.Move
 					break
 				}
@@ -67,7 +67,7 @@ func (p *AlphaBetaIAPlayer) alphabeta(n *board.Node, player int, alpha int, beta
 			for _, child := range n.Childs {
 				_, eval := p.alphabeta(child, nextPlayer, alpha, beta)
 				if eval <= alpha {
-					score = eval
+					score = alpha
 					bestMove = child.Move
 					break
 				}
@@ -86,6 +86,7 @@ func (p *AlphaBetaIAPlayer) Play(b *board.Board) int {
 	depth := 0
 	tree := board.NewNode(b, depth, 0)
 	p.construct(tree, depth, p.value)
+	fmt.Println("Time to construct : ", time.Since(startTime))
 
 	move, _ := p.alphabeta(tree, p.value, -20000, 4000)
 	fmt.Println("Time to play : ", time.Since(startTime))

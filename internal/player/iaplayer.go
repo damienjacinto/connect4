@@ -13,7 +13,7 @@ type IAPlayer interface {
 }
 
 func NewAIPlayer(color color.RGBA, value int, ia iatype) IAPlayer {
-	fmt.Printf("%s computer", ia.String())
+	fmt.Printf("%s computer\n", ia.String())
 	switch ia {
 	case RANDOM:
 		return NewRandomAIPlayer(color, value)
@@ -22,6 +22,6 @@ func NewAIPlayer(color color.RGBA, value int, ia iatype) IAPlayer {
 	case ALPHABETA:
 		return NewAlphaBetaIAPlayer(color, value)
 	default:
-		return NewRandomAIPlayer(color, value)
+		panic("unhandled default case")
 	}
 }
