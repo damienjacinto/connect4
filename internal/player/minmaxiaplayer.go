@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/damienjacinto/connect4/internal/board"
+	"github.com/damienjacinto/connect4/internal/gameboard"
 )
 
 type MinMaxIAPlayer struct {
@@ -25,7 +25,7 @@ func NewMinMaxIAPlayer(color color.RGBA, value int) IAPlayer {
 	}
 }
 
-func (p *MinMaxIAPlayer) construct(n *board.Node, depth int, player int) *board.Node {
+func (p *MinMaxIAPlayer) construct(n *gameboard.Node, depth int, player int) *gameboard.Node {
 	if depth < maxDepth && !n.Data.IsFinished() && !n.Data.IsFull() {
 		depth++
 		nextPlayer := (player % 2) + 1
@@ -34,14 +34,14 @@ func (p *MinMaxIAPlayer) construct(n *board.Node, depth int, player int) *board.
 		for _, m := range moves {
 			newBoard := n.Data.Copy()
 			newBoard.Play(m, player)
-			child := board.NewNode(newBoard, depth, m)
+			child := gameboard.NewNode(newBoard, depth, m)
 			n.AddChild(p.construct(child, depth, nextPlayer))
 		}
 	}
 	return n
 }
 
-func (p *MinMaxIAPlayer) minmax(n *board.Node, player int) (int, int) {
+func (p *MinMaxIAPlayer) minmax(n *gameboard.Node, player int) (int, int) {
 	var score int = 0
 	var bestMove int = n.Move
 	if len(n.Childs) == 0 {
@@ -71,10 +71,10 @@ func (p *MinMaxIAPlayer) minmax(n *board.Node, player int) (int, int) {
 	}
 }
 
-func (p *MinMaxIAPlayer) Play(b *board.Board) int {
+func (p *MinMaxIAPlayer) Play(b *gameboard.Board) int {
 	startTime := time.Now()
 	depth := 0
-	tree := board.NewNode(b, depth, 0)
+	tree := gameboard.NewNode(b, depth, 0)
 	p.construct(tree, depth, p.value)
 
 	move, _ := p.minmax(tree, p.value)

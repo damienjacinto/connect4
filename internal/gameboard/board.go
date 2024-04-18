@@ -1,23 +1,25 @@
-package board
+package gameboard
 
 import (
 	"fmt"
 )
 
-const width, height = 7, 6
-
 type Board struct {
-	state [][]int
+	state  [][]int
+	width  int
+	height int
 }
 
-func NewBoard() *Board {
+func NewBoard(width int, height int) *Board {
 	board := make([][]int, height)
 	for i := range board {
 		board[i] = make([]int, width)
 	}
 
 	return &Board{
-		state: board,
+		state:  board,
+		width:  width,
+		height: height,
 	}
 }
 
@@ -26,48 +28,48 @@ func (b *Board) GetBoard() [][]int {
 }
 
 func (b *Board) Reset() {
-	for i := range height {
-		for j := range width {
+	for i := range b.height {
+		for j := range b.width {
 			b.state[i][j] = 0
 		}
 	}
 }
 
 func (b *Board) GetWidth() int {
-	return width
+	return b.width
 }
 
 func (b *Board) GetHeigth() int {
-	return height
+	return b.height
 }
 
 func (b *Board) IsFinished() bool {
 	// Check horizontal
-	for i := 0; i < height; i++ {
-		for j := 0; j < width-3; j++ {
+	for i := 0; i < b.height; i++ {
+		for j := 0; j < b.width-3; j++ {
 			if b.state[i][j] != 0 && b.state[i][j] == b.state[i][j+1] && b.state[i][j] == b.state[i][j+2] && b.state[i][j] == b.state[i][j+3] {
 				return true
 			}
 		}
 	}
 	// Check vertical
-	for i := 0; i < height-3; i++ {
-		for j := 0; j < width; j++ {
+	for i := 0; i < b.height-3; i++ {
+		for j := 0; j < b.width; j++ {
 			if b.state[i][j] != 0 && b.state[i][j] == b.state[i+1][j] && b.state[i][j] == b.state[i+2][j] && b.state[i][j] == b.state[i+3][j] {
 				return true
 			}
 		}
 	}
 	// Check diagonal
-	for i := 0; i < height-3; i++ {
-		for j := 0; j < width-3; j++ {
+	for i := 0; i < b.height-3; i++ {
+		for j := 0; j < b.width-3; j++ {
 			if b.state[i][j] != 0 && b.state[i][j] == b.state[i+1][j+1] && b.state[i][j] == b.state[i+2][j+2] && b.state[i][j] == b.state[i+3][j+3] {
 				return true
 			}
 		}
 	}
-	for i := 0; i < height-3; i++ {
-		for j := 3; j < width; j++ {
+	for i := 0; i < b.height-3; i++ {
+		for j := 3; j < b.width; j++ {
 			if b.state[i][j] != 0 && b.state[i][j] == b.state[i+1][j-1] && b.state[i][j] == b.state[i+2][j-2] && b.state[i][j] == b.state[i+3][j-3] {
 				return true
 			}
@@ -77,8 +79,8 @@ func (b *Board) IsFinished() bool {
 }
 
 func (b *Board) IsFull() bool {
-	for i := height - 1; i >= 0; i-- {
-		for j := width - 1; j >= 0; j-- {
+	for i := b.height - 1; i >= 0; i-- {
+		for j := b.width - 1; j >= 0; j-- {
 			if b.state[i][j] == 0 {
 				return false
 			}
@@ -88,19 +90,21 @@ func (b *Board) IsFull() bool {
 }
 
 func (b *Board) Copy() *Board {
-	board := make([][]int, height)
-	for i := range height {
-		board[i] = make([]int, width)
+	board := make([][]int, b.height)
+	for i := range b.height {
+		board[i] = make([]int, b.width)
 		copy(board[i], b.state[i])
 	}
 	return &Board{
-		state: board,
+		state:  board,
+		width:  b.width,
+		height: b.height,
 	}
 }
 
 func (b *Board) GetAvailableMoves() []int {
 	var moves []int
-	for i := range width {
+	for i := range b.width {
 		if b.state[0][i] == 0 {
 			moves = append(moves, i)
 		}
@@ -124,9 +128,9 @@ func (b *Board) Play(col int, player int) error {
 
 func (b *Board) String() string {
 	str := ""
-	for i := range height {
+	for i := range b.height {
 		if i > 3 {
-			for j := range width {
+			for j := range b.width {
 				str += fmt.Sprintf("%d ", b.state[i][j])
 			}
 			str += "\n"
@@ -169,33 +173,33 @@ func (b *Board) GetEvaluation(player int) int {
 
 	var score int = 0
 	// Check horizontal
-	for i := 0; i < height; i++ {
-		for j := 0; j < width-3; j++ {
+	for i := 0; i < b.height; i++ {
+		for j := 0; j < b.width-3; j++ {
 			score += b.evaluateLine(player, b.state[i][j], b.state[i][j+1], b.state[i][j+2], b.state[i][j+3])
 		}
 	}
 	// Check vertical
-	for i := 0; i < height-3; i++ {
-		for j := 0; j < width; j++ {
+	for i := 0; i < b.height-3; i++ {
+		for j := 0; j < b.width; j++ {
 			score += b.evaluateLine(player, b.state[i][j], b.state[i+1][j], b.state[i+2][j], b.state[i+3][j])
 		}
 	}
 	// Check diagonal
-	for i := 0; i < height-3; i++ {
-		for j := 0; j < width-3; j++ {
+	for i := 0; i < b.height-3; i++ {
+		for j := 0; j < b.width-3; j++ {
 			score += b.evaluateLine(player, b.state[i][j], b.state[i+1][j+1], b.state[i+2][j+2], b.state[i+3][j+3])
 		}
 	}
 
-	for i := 0; i < height-3; i++ {
-		for j := 3; j < width; j++ {
+	for i := 0; i < b.height-3; i++ {
+		for j := 3; j < b.width; j++ {
 			score += b.evaluateLine(player, b.state[i][j], b.state[i+1][j-1], b.state[i+2][j-2], b.state[i+3][j-3])
 		}
 	}
 
 	// Better valuation for middle columns
-	for i := 0; i < height; i++ {
-		for j := 3; j < width-2; j++ {
+	for i := 0; i < b.height; i++ {
+		for j := 3; j < b.width-2; j++ {
 			if b.state[i][j] == player {
 				score += 1
 				if j == 3 {

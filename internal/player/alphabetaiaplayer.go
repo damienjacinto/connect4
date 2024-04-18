@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/damienjacinto/connect4/internal/board"
+	"github.com/damienjacinto/connect4/internal/gameboard"
 )
 
 type AlphaBetaIAPlayer struct {
@@ -25,7 +25,7 @@ func NewAlphaBetaIAPlayer(color color.RGBA, value int) IAPlayer {
 	}
 }
 
-func (p *AlphaBetaIAPlayer) construct(n *board.Node, depth int, player int) *board.Node {
+func (p *AlphaBetaIAPlayer) construct(n *gameboard.Node, depth int, player int) *gameboard.Node {
 	if depth < maxDepth && !n.Data.IsFinished() && !n.Data.IsFull() {
 		depth++
 		nextPlayer := (player % 2) + 1
@@ -34,14 +34,14 @@ func (p *AlphaBetaIAPlayer) construct(n *board.Node, depth int, player int) *boa
 		for _, m := range moves {
 			newBoard := n.Data.Copy()
 			newBoard.Play(m, player)
-			child := board.NewNode(newBoard, depth, m)
+			child := gameboard.NewNode(newBoard, depth, m)
 			n.AddChild(p.construct(child, depth, nextPlayer))
 		}
 	}
 	return n
 }
 
-func (p *AlphaBetaIAPlayer) alphabeta(n *board.Node, player int, alpha int, beta int) (int, int) {
+func (p *AlphaBetaIAPlayer) alphabeta(n *gameboard.Node, player int, alpha int, beta int) (int, int) {
 	var score int = 0
 	var bestMove int = n.Move
 	if len(n.Childs) == 0 {
@@ -81,10 +81,11 @@ func (p *AlphaBetaIAPlayer) alphabeta(n *board.Node, player int, alpha int, beta
 	}
 }
 
-func (p *AlphaBetaIAPlayer) Play(b *board.Board) int {
+func (p *AlphaBetaIAPlayer) Play(b *gameboard.Board) int {
+	time.Sleep(3 * time.Second)
 	startTime := time.Now()
 	depth := 0
-	tree := board.NewNode(b, depth, 0)
+	tree := gameboard.NewNode(b, depth, 0)
 	p.construct(tree, depth, p.value)
 	fmt.Println("Time to construct : ", time.Since(startTime))
 

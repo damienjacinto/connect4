@@ -5,7 +5,7 @@ import (
 	"math/rand/v2"
 	"time"
 
-	"github.com/damienjacinto/connect4/internal/board"
+	"github.com/damienjacinto/connect4/internal/gameboard"
 )
 
 type RandomAIPlayer struct {
@@ -24,7 +24,7 @@ func NewRandomAIPlayer(color color.RGBA, value int) IAPlayer {
 	}
 }
 
-func (p *RandomAIPlayer) Play(b *board.Board) int {
+func (p *RandomAIPlayer) Play(b *gameboard.Board) int {
 	moves := b.GetAvailableMoves()
 	time.Sleep(1000 * time.Millisecond)
 	return moves[rand.IntN(len(moves))]

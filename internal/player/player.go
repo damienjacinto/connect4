@@ -3,15 +3,20 @@ package player
 import (
 	"image/color"
 
-	"github.com/damienjacinto/connect4/internal/board"
+	"github.com/damienjacinto/connect4/internal/gameboard"
 )
 
 type IPlayer interface {
 	GetColor() color.RGBA
 	GetValue() int
 	GetName() string
-	Play(b *board.Board) int
+	Play(b *gameboard.Board) int
 }
+
+var (
+	Red    = color.RGBA{R: 255, G: 0, B: 0, A: 255}
+	Yellow = color.RGBA{R: 255, G: 255, B: 0, A: 255}
+)
 
 type Player struct {
 	color color.RGBA
@@ -39,7 +44,7 @@ func (p *HumanPlayer) SetMove(move int) {
 	p.move = move
 }
 
-func (p *HumanPlayer) Play(b *board.Board) int {
+func (p *HumanPlayer) Play(b *gameboard.Board) int {
 	return p.move
 }
 
